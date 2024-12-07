@@ -1,6 +1,7 @@
 ﻿using ClimaTempo.Models;
 using ClimaTempo.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.Maui.Controls.PlatformConfiguration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,10 +30,10 @@ namespace ClimaTempo.ViewModels
 
 
         [ObservableProperty]
-        private double min;
+        private string min;
 
         [ObservableProperty]
-        private double max;
+        private string max;
 
         [ObservableProperty]
         private double uv;
@@ -45,32 +46,37 @@ namespace ClimaTempo.ViewModels
 
         public ICommand BuscarPrevisaoCommand { get; }
 
-        public PrevisaoViewModel()
-        {
-            BuscarPrevisaoCommand = new Command(BuscarPrevisao);
-        }
+       // Dados da Pesquisa
+        [ObservableProperty]
+        private string cidade_pesquisada;
 
-        public async  void BuscarPrevisao()
-        {
-            previsao = await new PrevisaoServices().GetPrevisaoById(244);
-            
-
-            Cidade = previsao.Cidade;
-            Estado = previsao.Estado;
-            Condicao = previsao.Clima[0].Condicao;
-            Condicao_desc = previsao.Clima[0].Condicao_desc;
-            Max =    previsao.Clima[0].Max;
-            Min =    previsao.Clima[0].Min;
-            Uv = previsao.Clima[0].Indice_uv;
-            Data = previsao.Clima[0].Data;
-
-
-            proxPrevisao = await new PrevisaoServices().GetPrevisaoForXDaysById(244, 3);
-            ProximosDias = proxPrevisao.Clima;
-           
-            
+        //Dados da Lista de Cidade
+        [ObservableProperty]
+        private List<Cidade> cidade_list;
+         
+        public ICommand BuscarCidadesCommand { get; }
        
 
+
+        public PrevisaoViewModel()
+        {
+            BuscarPrevisaoCommand = new Command<int>(BuscarPrevisao);
+            BuscarCidadesCommand = new Command(BuscarCidades);  
+        }
+
+        public async  void BuscarPrevisao(int id)
+        {
+            previsao = await new PrevisaoServices().GetPrevisaoById(id);
+            max = previsao.Clima[0].Max.ToString();
+            min = previsao.Clima[0].Min.ToString();
+
+        }
+
+        public async void BuscarCidades()
+        {
+            Cidade_list = new List<Cidade>();
+            Cidade_list = await new CidadeService().GetCidadesByName(Cidade_pesquisada);
         }
     }
 }
+
